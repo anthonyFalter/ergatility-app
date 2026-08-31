@@ -1,55 +1,62 @@
-# Ergatility Prediction System
+# Ergatility Employee Retention Prediction System
 
-A machine learning prediction system with a FastAPI backend and Streamlit frontend for interactive predictions using a pre-trained Random Forest model.
+A machine learning prediction system with a FastAPI backend and Streamlit frontend for interactive employee churn risk analysis using a pre-trained Random Forest model.
 
 ## Project Structure
 
 ```
 ergatility-app/
-├── artifacts/                      
-│   ├── rf_cv_model.pickle          # Trained Random Forest model
-│   └── preprocessor.pickle         # Data scaler/encoder
+├── artifacts/                     
+│   └── rf_cv_model.pickle          # Trained Random Forest model
 │
 ├── backend/                        
 │   ├── main.py                     # FastAPI application & routes
-│   ├── schemas.py                  # Pydantic data validation
-│   ├── model_handler.py            # Model loading & inference
-│   ├── config.py                   # Configuration & constants
+│   ├── schemas.py                  # Pydantic data validation schemas
+│   ├── model_handler.py            # Model loading & inference logic
+│   ├── config.py                   # Configuration & environment paths
 │   └── __init__.py
 │
 ├── frontend/                       
-│   ├── app.py                      # Streamlit dashboard
-│   ├── utils.py                    # API client & helpers
+│   ├── app.py                      # Streamlit interactive UI
+│   ├── utils.py                    # API client & request helpers
 │   └── __init__.py
 │
 ├── tests/                          
-│   ├── test_api.py                 # API endpoint tests
-│   └── test_model.py               # Model inference tests
+│   ├── test_api.py                 # FastAPI endpoint unit tests
+│   └── test_model_handler.py       # Model handler unit tests
 │
 ├── requirements.txt                # Python dependencies
-└── README.md                       # This file
+└── README.md                       # Documentation
 ```
 
 ## Installation
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.12+
 - pip (Python package manager)
 
 ### Setup
 
-1. Clone or download the project:
+1. Clone or navigate into the project directory:
 ```bash
 cd ergatility-app
 ```
 
-2. Create a virtual environment (recommended):
-```bash
-python -m venv venv
-source venv/Scripts/activate  # On Windows
+2. Create and activate a virtual environment:
+
+On Windows (PowerShell):
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
-3. Install dependencies:
+On Linux/macOS:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+3. Install project dependencies:
 ```bash
 pip install -r requirements.txt
 ```
@@ -64,55 +71,72 @@ Start the FastAPI server:
 python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:8000`.
 
-- API Documentation: `http://localhost:8000/docs`
-- Alternative Docs: `http://localhost:8000/redoc`
+- Interactive API Docs (Swagger UI): `http://localhost:8000/docs`
+- Alternative Docs (ReDoc): `http://localhost:8000/redoc`
 - Health Check: `http://localhost:8000/health`
 
 ### Running the Frontend
 
-In a separate terminal, start the Streamlit app:
+In a separate terminal, activate the virtual environment and start the Streamlit application:
 
 ```bash
 streamlit run frontend/app.py
 ```
 
-The frontend will open at `http://localhost:8501`
+The application interface will launch at `http://localhost:8501`.
 
 ## API Endpoints
 
 ### Health Check
 - **GET** `/health`
-  - Returns API and model status
-  - Response: `{status, model_loaded, version}`
+  - Returns backend API service status and model loading state.
+  - Response: `{"status": "healthy", "model_loaded": true, "version": "1.0.0"}`
 
-### Single Prediction
+### Predict Employee Churn
 - **POST** `/predict`
-  - Input: `{features: [float, ...]}`
-  - Response: `{prediction: float, probability: [float, ...], confidence: float}`
-
-### Batch Predictions
-- **POST** `/batch-predict`
-  - Input: `[{features: [float, ...]}, ...]`
-  - Response: `{results: [{prediction, probability, confidence}, ...]}`
+  - Input JSON:
+    ```json
+    {
+      "satisfaction_level": 0.75,
+      "last_evaluation": 0.78,
+      "number_project": 4,
+      "average_montly_hours": 200,
+      "time_spend_company": 3,
+      "work_accident": 0,
+      "promotion_last_5years": 0,
+      "salary": "medium",
+      "department": "sales"
+    }
+    ```
+  - Response JSON:
+    ```json
+    {
+      "prediction": 0,
+      "probability": 0.084,
+      "risk_level": "Low Risk"
+    }
+    ```
 
 ## Example API Usage
 
 ### Using curl
 
-Single prediction:
 ```bash
 curl -X POST "http://localhost:8000/predict" \
   -H "Content-Type: application/json" \
-  -d '{"features": [1.0, 2.0, 3.0, 4.0, 5.0]}'
-```
-
-Batch predictions:
-```bash
-curl -X POST "http://localhost:8000/batch-predict" \
-  -H "Content-Type: application/json" \
-  -d '[{"features": [1.0, 2.0, 3.0, 4.0, 5.0]}, {"features": [2.0, 3.0, 4.0, 5.0, 6.0]}]'
+  -d '{
+    "satisfaction_level": 0.09,
+    "last_evaluation": 0.88,
+    "number_project": 6,
+    "average_montly_hours": 275,
+    "time_spend_company": 4,
+    "work_accident": 0,
+    "promotion_last_5years": 0,
+    "salary": "low",
+    "department": "sales"
+  }'
 ```
 
 ### Using Python
@@ -120,112 +144,59 @@ curl -X POST "http://localhost:8000/batch-predict" \
 ```python
 import requests
 
-# Single prediction
-response = requests.post(
-    "http://localhost:8000/predict",
-    json={"features": [1.0, 2.0, 3.0, 4.0, 5.0]}
-)
-print(response.json())
+payload = {
+    "satisfaction_level": 0.75,
+    "last_evaluation": 0.78,
+    "number_project": 4,
+    "average_montly_hours": 200,
+    "time_spend_company": 3,
+    "work_accident": 0,
+    "promotion_last_5years": 0,
+    "salary": "medium",
+    "department": "sales"
+}
 
-# Batch prediction
-response = requests.post(
-    "http://localhost:8000/batch-predict",
-    json=[
-        {"features": [1.0, 2.0, 3.0, 4.0, 5.0]},
-        {"features": [2.0, 3.0, 4.0, 5.0, 6.0]}
-    ]
-)
+response = requests.post("http://localhost:8000/predict", json=payload)
 print(response.json())
 ```
 
 ## Testing
 
-Run the test suite:
+Run the automated test suite using `pytest`:
 
 ```bash
 # Run all tests
 pytest
 
-# Run specific test file
+# Run specific test suites
 pytest tests/test_api.py
-pytest tests/test_model.py
+pytest tests/test_model_handler.py
 
 # Run with verbose output
 pytest -v
 
-# Run with coverage
+# Run with coverage report
 pip install pytest-cov
 pytest --cov=backend --cov=frontend
 ```
 
-## Configuration
+## Configuration & Environment Variables
 
-Edit `backend/config.py` to customize:
-- API host and port
-- CORS allowed origins
-- Model file paths
-- Model timeout
+Key settings can be configured via environment variables or modified in `backend/config.py` and `frontend/utils.py`:
 
-Set environment variables:
-```bash
-export API_HOST=0.0.0.0
-export API_PORT=8000
-export API_RELOAD=True
-```
-
-## Model Details
-
-The system uses a scikit-learn Random Forest model with:
-- Input: Feature vector (preprocessed)
-- Output: Numeric prediction with confidence score
-- Preprocessing: StandardScaler or similar (loaded from pickle)
-
-## Features
-
-- **FastAPI Backend**: High-performance async API with automatic documentation
-- **Streamlit Frontend**: Interactive web UI for predictions
-- **Batch Processing**: Support for processing multiple samples simultaneously
-- **Health Monitoring**: API health and model status checks
-- **Error Handling**: Comprehensive error messages and validation
-- **CORS Support**: Cross-origin requests enabled for frontend
-- **Testing**: Full test coverage for API and model components
+- **`BACKEND_URL`**: Base URL used by the Streamlit frontend to communicate with the FastAPI server (Default: `http://localhost:8000`).
+- **`MODEL_PATH`**: File system location of the trained model binary (Default: `artifacts/rf_cv_model.pickle`).
 
 ## Troubleshooting
 
-### Model not loading
-- Verify pickle files exist in `artifacts/` directory
-- Check file paths in `backend/config.py`
-- Ensure pickle files are compatible with installed sklearn version
+### API Service Offline in Streamlit
+- Ensure the FastAPI server is running on `http://localhost:8000` before submitting prediction forms in Streamlit.
+- Check that `BACKEND_URL` is configured correctly if deployed across external servers (e.g., Railway or Render).
 
-### API Connection Error
-- Ensure backend is running on correct host/port
-- Check `API_HOST` and `API_PORT` configuration
-- Verify firewall settings
+### ModuleNotFoundError: No module named 'frontend' or 'backend'
+- Run Python commands with module execution context: `python -m uvicorn backend.main:app --reload`.
+- Ensure you launch Streamlit using `streamlit run frontend/app.py` from the root project folder.
 
-### Prediction Failures
-- Check feature input dimensions match model expectations
-- Verify features are valid numeric values
-- Review model error logs for preprocessing issues
-
-## Development
-
-### Project Requirements
-- Python 3.8+
-- FastAPI for backend
-- Streamlit for frontend
-- scikit-learn for model
-- pytest for testing
-
-### Code Structure
-- Clean separation between backend and frontend
-- Modular model handler for easy integration
-- Comprehensive type hints with Pydantic
-- Proper error handling and logging
-
-## License
-
-Specify your license here.
-
-## Contact
-
-For questions or issues, please contact the development team.
+### Validation Errors (422 Unprocessable Entity)
+- Ensure all numeric fields adhere to defined constraints (e.g., `satisfaction_level` between `0.0` and `1.0`).
+- Ensure categorical fields match expected values (`salary`: `"low"`, `"medium"`, or `"high"`).
