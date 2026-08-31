@@ -1,6 +1,21 @@
 # Ergatility Employee Retention Prediction System
 
-A machine learning prediction system with a FastAPI backend and Streamlit frontend for interactive employee churn risk analysis using a pre-trained Random Forest model.
+Ergatility is a unified simulation platform and RESTful API built to model, simulate, and analyze employee turnover dynamics. By combining predictive analytics with programmatic access, Ergatility enables organizations and developers to evaluate retention scenarios, assess attrition risks, and integrate workforce simulation data directly into enterprise HR workflows.
+
+- **Streamlit Interactive Dashboard:** [https://ergatility.streamlit.app/](https://ergatility.streamlit.app/)
+
+- **Render Backend API:** [https://ergatility-backend-api.onrender.com](https://ergatility-backend-api.onrender.com)
+
+
+**Features:**
+- Turnover Simulation Engine: Runs predictive models to simulate workforce attrition across various organizational scenarios and parameters.
+
+- RESTful API Service: Exposes clean, high-performance endpoints built with FastAPI to programmatically execute simulations, query prediction models, and check engine health.
+
+- Integrated Environment: Package both analytics models and API infrastructure within a single, modular codebase for streamlined deployment and testing.
+
+
+*Note: The API is hosted using Render, an operational delay of up to 1 minute is to be expected so please wait while your payload gets processed.*
 
 ## Project Structure
 
