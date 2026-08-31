@@ -1,29 +1,23 @@
-import os
-import pickle
-import numpy as np
-import pandas as pd
 import streamlit as st
+from frontend.utils import check_api_health, get_prediction
 
 # Page Configuration
 st.set_page_config(
-    page_title="Employee Retention Predictor", layout="centered"
+    page_title="Employee Retention Predictor",
+    layout="centered",
 )
 
+# Sidebar Health Check
+st.sidebar.title("System Status")
+api_online = check_api_health()
 
-# Load Model Artifact
-@st.cache_resource
-def load_model():
-    model_path = os.path.join(".", "artifacts", "rf_cv_model.pickle")
-    with open(model_path, "rb") as f:
-        model = pickle.load(f)
-    return model
-
-
-try:
-    model = load_model()
-except Exception as e:
-    st.error(f"Error loading model: {e}")
-    st.stop()
+if api_online:
+    st.sidebar.success("API Service: Connected")
+else:
+    st.sidebar.error("API Service: Offline")
+    st.sidebar.warning(
+        "Make sure your FastAPI server is running on Railway or local port 8000."
+    )
 
 # Header
 st.title("Ergatility Employee Churn Prediction")
@@ -39,7 +33,9 @@ with st.form("prediction_form"):
         satisfaction_level = st.slider(
             "Satisfaction Level", 0.0, 1.0, 0.75, 0.01
         )
-        last_evaluation = st.slider("Last Evaluation Score", 0.0, 1.0, 0.78, 0.01)
+        last_evaluation = st.slider(
+            "Last Evaluation Score", 0.0, 1.0, 0.78, 0.01
+        )
         number_project = st.number_input(
             "Number of Projects", min_value=2, max_value=7, value=4, step=1
         )
@@ -91,65 +87,51 @@ with st.form("prediction_form"):
 
 # Execution Logic
 if submit_button:
-    # 1. Create raw DataFrame
-    raw_df = pd.DataFrame(
-        [
-            {
-                "satisfaction_level": satisfaction_level,
-                "last_evaluation": last_evaluation,
-                "number_project": number_project,
-                "average_montly_hours": average_montly_hours,
-                "time_spend_company": time_spend_company,
-                "work_accident": work_accident,
-                "promotion_last_5years": promotion_last_5years,
-                "salary": salary,
-                "department": department,
-            }
-        ]
-    )
-
-    # 2. Map ordinal salary
-    salary_map = {"high": 2, "medium": 1, "low": 0}
-    raw_df["salary"] = raw_df["salary"].map(salary_map)
-
-    # 3. Handle dummy variables
-    all_departments = [
-        "RandD",
-        "accounting",
-        "hr",
-        "management",
-        "marketing",
-        "product_mng",
-        "sales",
-        "support",
-        "technical",
-    ]
-
-    for d in all_departments:
-        raw_df[f"department_{d}"] = 1 if department == d else 0
-
-    raw_df = raw_df.drop(columns=["department"])
-
-    # 4. Align features with model expected signature
-    if hasattr(model, "feature_names_in_"):
-        final_input = raw_df[model.feature_names_in_]
+    if not api_online:
+        st.error(
+            "Cannot submit prediction: Backend API server is unavailable."
+        )
     else:
-        final_input = raw_df
+        # Build JSON payload for FastAPI endpoint
+        payload = {
+            "satisfaction_level": float(satisfaction_level),
+            "last_evaluation": float(last_evaluation),
+            "number_project": int(number_project),
+            "average_montly_hours": int(average_montly_hours),
+            "time_spend_company": int(time_spend_company),
+            "work_accident": int(work_accident),
+            "promotion_last_5years": int(promotion_last_5years),
+            "salary": salary,
+            "department": department,
+        }
 
-    # 5. Predict
-    prediction = model.predict(final_input)[0]
-    probability = model.predict_proba(final_input)[0][1]
+        with st.spinner("Calculating churn risk via API..."):
+            response = get_prediction(payload)
 
-    # Output Render
-    st.markdown("---")
-    st.subheader("Prediction Output")
+        st.markdown("---")
+        st.subheader("Prediction Output")
 
-    if prediction == 1:
-        st.error("High Risk: The employee is predicted to leave the company.")
-    else:
-        st.success("Low Risk: The employee is predicted to stay.")
+        if response and "error" not in response:
+            prediction = response.get("prediction")
+            probability = response.get("probability", 0.0)
+            risk_level = response.get("risk_level", "Unknown")
 
-    st.metric(
-        label="Probability of Leaving", value=f"{probability * 100:.1f}%"
-    )
-    st.progress(float(probability))
+            if prediction == 1:
+                st.error(
+                    f"{risk_level}: The employee is predicted to leave the company."
+                )
+            else:
+                st.success(
+                    f"{risk_level}: The employee is predicted to stay."
+                )
+
+            st.metric(
+                label="Probability of Leaving",
+                value=f"{probability * 100:.1f}%",
+            )
+            st.progress(float(probability))
+        else:
+            error_msg = (
+                response.get("error") if response else "Unknown API Error"
+            )
+            st.error(f"Prediction Request Failed: {error_msg}")
