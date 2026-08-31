@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 import pickle
 import pandas as pd
-from backend.schemas import ChurnInputSchemas
+from backend.schemas import ChurnInputSchema
 
 logger = logging.getLogger(__name__)
 
@@ -28,3 +28,10 @@ class ModelHandler:
             logger.error(f"Failed to load model: {str(e)}")
             self.is_loaded = False
             raise e
+        
+    def preprocess_input(self, data: ChurnInputSchema) -> pd.DataFrame:
+        '''Transform Pydantic input schema to feature-aligned pandas Dataframe'''
+        
+        raw_dict = data.model_dump()
+        
+        
