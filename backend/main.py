@@ -76,4 +76,34 @@ def predict(input_data: ChurnInputSchema):
             logger.error(f"Prediction error: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
         
+@app.post("/batch-predict", tags=["Prediction"])
+def batch_predict(batch_inputs: list[ChurnInputSchema]):
+    '''Make batch predictionss for multiple employee records'''
+    if not model_handler or not model_handler.is_loaded:
+        raise HTTPException(
+            status_code=503,
+            detail="Model not loaded. Service unavailable."
+        )
         
+        try:
+            results = []
+            for input_data in batch_inputs:
+                prediction, probability, risk_level = model_handler.predict(
+                    input_data
+                )
+                results.append(
+                    {
+                        "prediction":prediction,
+                        "probability":probability,
+                        "risk_level":risk_level,
+                    }
+                )
+                
+                return {"results":results}
+            
+        except Exception as e:
+            logger.error(f"Batch prediction error: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Batch prediction failed {str(e)}"
+            )
