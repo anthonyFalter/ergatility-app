@@ -46,3 +46,12 @@ def read_root():
         "health": "/health",
     }
     
+@app.get("/health", response_model=HealthCheckResponse, tags=["Health"])
+def health_check():
+    '''Check API and model health status'''
+    return HealthCheckResponse(
+        status="healthy"
+        if model_handler and model_handler.is_loaded
+        else "unhealthy",
+        model_loaded=model_handler is not None and model_handler.is_loaded,
+    )
