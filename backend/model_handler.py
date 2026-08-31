@@ -78,20 +78,20 @@ class ModelHandler:
             
         return df
 
-def predict(self, data: ChurnInputSchema) -> tuple[int, float, str]:
-    '''Execute model prediction and return formatted result metrics'''
-    
-    if not self.is_loaded or self.model is None:
-        raise RuntimeError('Model is not loaded.')
-    
-    input_df = self.preprocess_input(data)
-    
-    # Class prediction
-    prediction = int(self.model.predict(input_df)[0])
-    probabilities = self.mode.predict_proba(input_df)[0]
-    probability = float(probabilities[1])
-    
-    # Risk evaluation label
-    risk_level = 'High Risk' if prediction == 1 else 'Low Risk'
-    
-    return prediction, probability, risk_level
+    def predict(self, data: ChurnInputSchema) -> tuple[int, float, str]:
+        '''Execute model prediction and return formatted result metrics'''
+        
+        if not self.is_loaded or self.model is None:
+            raise RuntimeError('Model is not loaded.')
+        
+        input_df = self.preprocess_input(data)
+        
+        # Class prediction
+        prediction = int(self.model.predict(input_df)[0])
+        probabilities = self.mode.predict_proba(input_df)[0]
+        probability = float(probabilities[1])
+        
+        # Risk evaluation label
+        risk_level = 'High Risk' if prediction == 1 else 'Low Risk'
+        
+        return prediction, probability, risk_level
