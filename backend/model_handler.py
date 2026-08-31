@@ -52,4 +52,29 @@ class ModelHandler:
         }
         
         # Apply One-Hot Encoding for `Departments`
+        all_departments = [
+            "RandD",
+            "accounting",
+            "hr",
+            "management",
+            "marketing",
+            "product_mng",
+            "sales",
+            "support",
+            "technical",
+        ] # `IT` not included as it serves as implicit baseline
+        
+        selected_dept = raw_dict["department"]
+        for dept in all_departments:
+            processed_data[f"department_{dept}"] = (
+                1 if selected_dept == dept else 0
+            )
+            
+        df = pd.DataFrame([processed_data])
+        
+        # Column Order Alignment
+        if hasattr(self.model, 'feature_names_in_'):
+            df = df[self.model.feature_names_in_]
+            
+        return df
         
