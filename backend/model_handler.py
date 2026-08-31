@@ -77,4 +77,11 @@ class ModelHandler:
             df = df[self.model.feature_names_in_]
             
         return df
-        
+
+def predict(self, data: ChurnInputSchema) -> tuple[int, float, str]:
+    '''Execute model prediction and return formatted result metrics'''
+    
+    if not self.is_loaded or self.model is None:
+        raise RuntimeError('Model is not loaded.')
+    
+    input_df = self.preprocess_input(data)
