@@ -8,7 +8,10 @@ API_URL = os.getenv("BACKEND_URL", "https://ergatility-backend-api.onrender.com"
 def check_api_health() -> bool:
     """Verify FastAPI backend and model healthiness."""
     try:
-        response = requests.get(f"{API_URL}/health", timeout=5)
+        # Increased timeout to 60s to account for Render cold-starts
+        base_url = API_URL.rstrip('/')
+        response = requests.get(f"{base_url}/health", timeout=60)
+        
         if response.status_code == 200:
             data = response.json()
             return data.get("status") == "healthy" and data.get(
@@ -16,7 +19,7 @@ def check_api_health() -> bool:
             )
 
         return False
-    except requests.exceptions.RequestException:
+    except requests.RequestException:
         return False
 
 
