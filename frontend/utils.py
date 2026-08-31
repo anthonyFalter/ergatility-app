@@ -17,3 +17,8 @@ def check_api_health() -> bool:
         return False
     except requests.exceptions.RequestException:
         return False
+
+def get_prediction(payload: dict) -> dict | None:
+    '''Send input features to backend API for prediction results'''
+    
+    try: 
