@@ -88,3 +88,8 @@ class ChurnInputSchema(BaseModel):
             ...,
             description="Risk evaluation label ('High Risk' or 'Low Risk')"
         )
+        
+    class HealthCheckResponse(BaseModel):
+        status: str
+        model_loaded: bool
+    
