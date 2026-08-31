@@ -17,3 +17,11 @@ class ChurnInputSchema(BaseModel):
         description='Last performance evaluation score between 0.0 and 1.0',
         examples=[0.78]
     )
+    
+    number_project: int = Field(
+        ...,
+        ge=2,
+        le=7,
+        description='Number of assigned projects (range:2-7)',
+        examples=[4]
+    )
