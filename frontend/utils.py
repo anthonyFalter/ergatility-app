@@ -21,4 +21,10 @@ def check_api_health() -> bool:
 def get_prediction(payload: dict) -> dict | None:
     '''Send input features to backend API for prediction results'''
     
-    try: 
+    try:
+        response = requests.post(
+            f"{API_URL}/predict",
+            json=payload,
+            headers={"Content-Type": "application/json"},
+            timeout=10
+        )
