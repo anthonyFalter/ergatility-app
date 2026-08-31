@@ -2,7 +2,7 @@ import os
 import requests
 
 # Base URL for API calls - defaults to local FastAPI server, falls back to Railway environment variable
-API_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+API_URL = os.getenv("BACKEND_URL", "https://ergatility-backend-api.onrender.com")
 
 
 def check_api_health() -> bool:
