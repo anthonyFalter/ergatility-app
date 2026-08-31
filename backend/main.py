@@ -55,3 +55,25 @@ def health_check():
         else "unhealthy",
         model_loaded=model_handler is not None and model_handler.is_loaded,
     )
+    
+@app.post("/predict", response_model=ChurnPredictionOutput, tags=["Prediction"])
+def predict(input_data: ChurnInputSchema):
+    '''Make a prediction based on employee metrics.'''
+    if not model_handler or not model_handler.is_loaded:
+        raise HTTPException(
+            status_code=503, detail='Model not loaded. Service unavailable'
+        )
+        
+        try:
+            prediction, probability, risk_level = model_handler.predict(input_data)
+            
+            return ChurnPredictionOutput(
+                prediction=prediction,
+                probability=probability,
+                risk_level=risk_level
+            )
+        except Exception as e:
+            logger.error(f"Prediction error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        
+        
