@@ -85,6 +85,8 @@ with st.form("prediction_form"):
         "Predict Churn Risk", type="primary", use_container_width=True
     )
 
+st.caption("*Note: If the backend service is currently idle, initial predictions may take up to 30–60 seconds to respond.*")
+
 # Execution Logic
 if submit_button:
     if not api_online:
@@ -135,3 +137,5 @@ if submit_button:
                 response.get("error") if response else "Unknown API Error"
             )
             st.error(f"Prediction Request Failed: {error_msg}")
+            
+st.subheader("Please wait for up to 30 seconds - 1 minute incase the app won't output predictions.")
