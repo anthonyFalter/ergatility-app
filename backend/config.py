@@ -7,7 +7,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Model artifacts paths
 ARTIFACTS_DIR = BASE_DIR / "artifacts"
 MODEL_PATH = ARTIFACTS_DIR / "rf_cv_model.pickle"
-PREPROCESSOR_PATH = ARTIFACTS_DIR / "preprocessor.pickle"
+
+# Ensure Artifact Directory exists
+ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # API Configuration
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
@@ -22,4 +24,5 @@ ALLOWED_ORIGINS = [
     "http://localhost:8501",
     "http://localhost:3000",
     "http://127.0.0.1:8501",
+    "*",
 ]
