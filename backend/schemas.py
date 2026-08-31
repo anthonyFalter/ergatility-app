@@ -72,3 +72,19 @@ class ChurnInputSchema(BaseModel):
         description="Department name",
         examples=["sales"],
     )
+    
+    class ChurnPredictionOutput(BaseModel):
+        prediction: int = Field(
+            ...,
+            description='Predicted class: 1 (Leave) or 0 (Stay)'
+        )
+        
+        probability: float = Field(
+            ...,
+            description='Probability of churn (range: 0.0-1.0)'
+        )
+        
+        risk_level: str = Field(
+            ...,
+            description="Risk evaluation label ('High Risk' or 'Low Risk')"
+        )
