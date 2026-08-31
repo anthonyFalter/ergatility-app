@@ -16,7 +16,7 @@ if api_online:
 else:
     st.sidebar.error("API Service: Offline")
     st.sidebar.warning(
-        "Make sure your FastAPI server is running on Railway or local port 8000."
+        "Backend server is starting up or unreachable. Please allow up to 1 minute and refresh the page."
     )
 
 # Header
@@ -85,13 +85,16 @@ with st.form("prediction_form"):
         "Predict Churn Risk", type="primary", use_container_width=True
     )
 
-st.caption("*Note: If the backend service is currently idle, initial predictions may take up to 30–60 seconds to respond.*")
+# Cold Start Notice (Placed near submit button)
+st.caption(
+    "ℹ️ *Note: If the backend is idle, startup can take up to 30–60 seconds. Refreshing the page after a few seconds will re-check the status.*"
+)
 
 # Execution Logic
 if submit_button:
     if not api_online:
         st.error(
-            "Cannot submit prediction: Backend API server is unavailable."
+            "Cannot submit prediction: Backend API server is unavailable or still waking up. Please refresh the page in a few moments."
         )
     else:
         # Build JSON payload for FastAPI endpoint
@@ -107,7 +110,7 @@ if submit_button:
             "department": department,
         }
 
-        with st.spinner("Calculating churn risk via API..."):
+        with st.spinner("Calculating churn risk via API (this may take up to 60s if starting up)..."):
             response = get_prediction(payload)
 
         st.markdown("---")
@@ -137,5 +140,3 @@ if submit_button:
                 response.get("error") if response else "Unknown API Error"
             )
             st.error(f"Prediction Request Failed: {error_msg}")
-            
-st.subheader("Please wait for up to 30 seconds - 1 minute incase the app won't output predictions.")
