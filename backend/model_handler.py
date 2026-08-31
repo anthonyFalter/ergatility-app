@@ -88,7 +88,7 @@ class ModelHandler:
         
         # Class prediction
         prediction = int(self.model.predict(input_df)[0])
-        probabilities = self.mode.predict_proba(input_df)[0]
+        probabilities = self.model.predict_proba(input_df)[0]
         probability = float(probabilities[1])
         
         # Risk evaluation label
