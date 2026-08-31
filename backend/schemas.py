@@ -9,3 +9,11 @@ class ChurnInputSchema(BaseModel):
         description='Employee satisfaction score between 0.0 and 1.0',
         example=[0.75],
     )
+    
+    last_evaluation: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description='Last performance evaluation score between 0.0 and 1.0',
+        examples=[0.78]
+    )
