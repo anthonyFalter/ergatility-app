@@ -25,3 +25,11 @@ class ChurnInputSchema(BaseModel):
         description='Number of assigned projects (range:2-7)',
         examples=[4]
     )
+    
+    average_montly_hours: int = Field(
+        ...,
+        ge=90,
+        le=310,
+        description='Average monthly hours worked (range: 90-310)',
+        examples=[200],
+    )
