@@ -29,3 +29,20 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
+
+# Initialize model handler
+try:
+    model_handler = ModelHandler(MODEL_PATH)
+except Exception as e:
+    logger.error(f"Failed to initialize model handler: {str(e)}")
+    model_handler = None
+    
+@app.get("/", tags=["Root"])
+def read_root():
+    '''Welcome endpoint'''
+    return {
+        "message": "Welcome to Employee Churn Prediction API",
+        "docs": "/docs",
+        "health": "/health",
+    }
+    
