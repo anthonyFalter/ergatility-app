@@ -26,7 +26,7 @@ except Exception as e:
     st.stop()
 
 # Header
-st.title("Employee Churn Prediction")
+st.title("Ergatility Employee Churn Prediction")
 st.markdown("Adjust employee attributes below to predict the likelihood of churn.")
 
 # Input Form
