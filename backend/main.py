@@ -2,10 +2,10 @@ import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.config import ALLOWED_ORIGINS, MODEL_PATH, PREPROCESSOR_PATH
+from backend.config import ALLOWED_ORIGINS, MODEL_PATH
 from backend.model_handler import ModelHandler
 from backend.schemas import (
-    ChurnInputSchemma,
+    ChurnInputSchema,
     ChurnPredictionOutput,
     HealthCheckResponse,
 )
@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title = "Ergatility Employee Turnover Prediction API",
+    title="Ergatility Employee Turnover Prediction API",
     description="REST API for predicting employee churn risk",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Add CORS middleware
@@ -36,74 +36,92 @@ try:
 except Exception as e:
     logger.error(f"Failed to initialize model handler: {str(e)}")
     model_handler = None
-    
+
+
 @app.get("/", tags=["Root"])
 def read_root():
-    '''Welcome endpoint'''
+    """Welcome endpoint"""
     return {
         "message": "Welcome to Employee Churn Prediction API",
         "docs": "/docs",
         "health": "/health",
     }
-    
+
+
 @app.get("/health", response_model=HealthCheckResponse, tags=["Health"])
 def health_check():
-    '''Check API and model health status'''
+    """Check API and model health status"""
     return HealthCheckResponse(
         status="healthy"
         if model_handler and model_handler.is_loaded
         else "unhealthy",
         model_loaded=model_handler is not None and model_handler.is_loaded,
     )
-    
-@app.post("/predict", response_model=ChurnPredictionOutput, tags=["Prediction"])
+
+
+@app.post(
+    "/predict", response_model=ChurnPredictionOutput, tags=["Prediction"]
+)
 def predict(input_data: ChurnInputSchema):
-    '''Make a prediction based on employee metrics.'''
+    """Make a prediction based on employee metrics."""
     if not model_handler or not model_handler.is_loaded:
         raise HTTPException(
-            status_code=503, detail='Model not loaded. Service unavailable'
+            status_code=503, detail="Model not loaded. Service unavailable"
         )
-        
-        try:
-            prediction, probability, risk_level = model_handler.predict(input_data)
-            
-            return ChurnPredictionOutput(
-                prediction=prediction,
-                probability=probability,
-                risk_level=risk_level
-            )
-        except Exception as e:
-            logger.error(f"Prediction error: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
-        
+
+    try:
+        prediction, probability, risk_level = model_handler.predict(input_data)
+
+        return ChurnPredictionOutput(
+            prediction=prediction,
+            probability=probability,
+            risk_level=risk_level,
+        )
+    except Exception as e:
+        logger.error(f"Prediction error: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Prediction failed: {str(e)}"
+        )
+
+
 @app.post("/batch-predict", tags=["Prediction"])
 def batch_predict(batch_inputs: list[ChurnInputSchema]):
-    '''Make batch predictionss for multiple employee records'''
+    """Make batch predictions for multiple employee records."""
     if not model_handler or not model_handler.is_loaded:
         raise HTTPException(
-            status_code=503,
-            detail="Model not loaded. Service unavailable."
+            status_code=503, detail="Model not loaded. Service unavailable."
         )
-        
-        try:
-            results = []
-            for input_data in batch_inputs:
-                prediction, probability, risk_level = model_handler.predict(
-                    input_data
-                )
-                results.append(
-                    {
-                        "prediction":prediction,
-                        "probability":probability,
-                        "risk_level":risk_level,
-                    }
-                )
-                
-                return {"results":results}
-            
-        except Exception as e:
-            logger.error(f"Batch prediction error: {str(e)}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Batch prediction failed {str(e)}"
+
+    try:
+        results = []
+        for input_data in batch_inputs:
+            prediction, probability, risk_level = model_handler.predict(
+                input_data
             )
+            results.append(
+                {
+                    "prediction": prediction,
+                    "probability": probability,
+                    "risk_level": risk_level,
+                }
+            )
+
+        return {"results": results}
+
+    except Exception as e:
+        logger.error(f"Batch prediction error: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Batch prediction failed: {str(e)}"
+        )
+
+
+if __name__ == "__main__":
+    import uvicorn
+    from backend.config import API_HOST, API_PORT, API_RELOAD
+
+    uvicorn.run(
+        "backend.main:app",
+        host=API_HOST,
+        port=API_PORT,
+        reload=API_RELOAD,
+    )
