@@ -1,95 +1,96 @@
-import pytest
-import sys
 from pathlib import Path
+import sys
+import pandas as pd
+import pytest
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from backend.config import MODEL_PATH
 from backend.model_handler import ModelHandler
-from backend.config import MODEL_PATH, PREPROCESSOR_PATH
 
 
 class TestModelHandler:
-    """Tests for ModelHandler class"""
-    
+    """Tests for ModelHandler class."""
+
     @pytest.fixture
     def model_handler(self):
-        """Create a ModelHandler instance"""
-        return ModelHandler(MODEL_PATH, PREPROCESSOR_PATH)
-    
+        """Create a ModelHandler instance."""
+        return ModelHandler(MODEL_PATH)
+
+    @pytest.fixture
+    def sample_input_dict(self):
+        """Sample employee dictionary input matching API schema."""
+        return {
+            "satisfaction_level": 0.75,
+            "last_evaluation": 0.78,
+            "number_project": 4,
+            "average_montly_hours": 200,
+            "time_spend_company": 3,
+            "work_accident": 0,
+            "promotion_last_5years": 0,
+            "salary": "medium",
+            "department": "sales",
+        }
+
     def test_model_initialization(self, model_handler):
-        """Test that model initializes correctly"""
-        assert model_handler.is_loaded, "Model should be loaded on initialization"
+        """Test that model initializes correctly."""
+        assert (
+            model_handler.is_loaded
+        ), "Model should be loaded on initialization"
         assert model_handler.model is not None, "Model should not be None"
-        assert model_handler.preprocessor is not None, "Preprocessor should not be None"
-    
+
     def test_model_files_exist(self):
-        """Test that model files exist"""
+        """Test that model artifact exists."""
         assert MODEL_PATH.exists(), f"Model file not found at {MODEL_PATH}"
-        assert PREPROCESSOR_PATH.exists(), f"Preprocessor file not found at {PREPROCESSOR_PATH}"
-    
-    def test_predict_output_shape(self, model_handler):
-        """Test that prediction returns expected output"""
-        features = [1.0, 2.0, 3.0, 4.0, 5.0]
-        prediction, probability, confidence = model_handler.predict(features)
-        
-        assert isinstance(prediction, float), "Prediction should be float"
-        assert isinstance(confidence, float), "Confidence should be float"
-        assert 0 <= confidence <= 1, "Confidence should be between 0 and 1"
-        
-        if probability is not None:
-            assert isinstance(probability, list), "Probability should be list"
-    
-    def test_predict_with_different_features(self, model_handler):
-        """Test prediction with various feature sets"""
-        test_cases = [
-            [1.0, 2.0, 3.0, 4.0, 5.0],
-            [0.5, 1.5, 2.5, 3.5, 4.5],
-            [10.0, 20.0, 30.0, 40.0, 50.0],
-        ]
-        
-        for features in test_cases:
-            prediction, probability, confidence = model_handler.predict(features)
-            assert isinstance(prediction, float), f"Failed for features: {features}"
-            assert isinstance(confidence, float), f"Failed for features: {features}"
-    
-    def test_model_consistency(self, model_handler):
-        """Test that same features produce same prediction"""
-        features = [1.0, 2.0, 3.0, 4.0, 5.0]
-        
-        pred1, prob1, conf1 = model_handler.predict(features)
-        pred2, prob2, conf2 = model_handler.predict(features)
-        
+
+    def test_predict_output_types_and_bounds(
+        self, model_handler, sample_input_dict
+    ):
+        """Test that prediction returns expected binary target and probability bounds."""
+        prediction, probability = model_handler.predict(sample_input_dict)
+
+        assert isinstance(prediction, (int, float))
+        assert prediction in [0, 1], "Prediction target should be 0 or 1"
+
+        assert isinstance(
+            probability, float
+        ), "Probability should be a float"
+        assert (
+            0.0 <= probability <= 1.0
+        ), "Probability should be between 0 and 1"
+
+    def test_model_consistency(self, model_handler, sample_input_dict):
+        """Test that identical input features produce deterministic output."""
+        pred1, prob1 = model_handler.predict(sample_input_dict)
+        pred2, prob2 = model_handler.predict(sample_input_dict)
+
         assert pred1 == pred2, "Predictions should be consistent"
-        assert conf1 == conf2, "Confidence should be consistent"
-    
-    def test_preprocess_output_type(self, model_handler):
-        """Test that preprocessing returns correct type"""
-        features = [1.0, 2.0, 3.0, 4.0, 5.0]
-        processed = model_handler.preprocess(features)
-        
-        assert isinstance(processed, list), "Preprocessed output should be list"
-        assert len(processed) == len(features), "Should maintain feature count"
+        assert prob1 == prob2, "Probabilities should be consistent"
+
+    def test_preprocess_output_format(self, model_handler, sample_input_dict):
+        """Test that preprocessing transforms raw dict input into a pandas DataFrame."""
+        processed_df = model_handler.preprocess(sample_input_dict)
+
+        assert isinstance(
+            processed_df, pd.DataFrame
+        ), "Preprocessed feature structure must be a DataFrame"
+        assert (
+            not processed_df.empty
+        ), "Preprocessed DataFrame should not be empty"
 
 
 class TestModelLoadingErrors:
-    """Tests for error handling in model loading"""
-    
+    """Tests for error handling in model loading."""
+
     def test_missing_model_file(self, tmp_path):
-        """Test error when model file is missing"""
-        missing_path = tmp_path / "missing_model.pickle"
-        valid_path = PREPROCESSOR_PATH
-        
-        handler = ModelHandler(missing_path, valid_path)
-        assert not handler.is_loaded, "Should not be loaded with missing model file"
-    
-    def test_missing_preprocessor_file(self, tmp_path):
-        """Test error when preprocessor file is missing"""
-        valid_path = MODEL_PATH
-        missing_path = tmp_path / "missing_preprocessor.pickle"
-        
-        handler = ModelHandler(valid_path, missing_path)
-        assert not handler.is_loaded, "Should not be loaded with missing preprocessor file"
+        """Test error handling when model file path does not exist."""
+        missing_path = tmp_path / "non_existent_model.pickle"
+        handler = ModelHandler(missing_path)
+
+        assert (
+            not handler.is_loaded
+        ), "ModelHandler should set is_loaded=False when path is invalid"
 
 
 if __name__ == "__main__":
