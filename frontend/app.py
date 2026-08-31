@@ -1,5 +1,5 @@
 import streamlit as st
-from frontend.utils import check_api_health, get_prediction
+from utils import check_api_health, get_prediction
 
 # Page Configuration
 st.set_page_config(
