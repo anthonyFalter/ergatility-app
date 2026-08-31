@@ -23,4 +23,8 @@ class ModelHandler:
                 self.model = pickle.load(f)
                 
             self.is_loaded = True
-            logger.info
+            logger.info(f"Succesfully loaded model from {self.model_path.name}")
+        except Exception as e:
+            logger.error(f"Failed to load model: {str(e)}")
+            self.is_loaded = False
+            raise e
