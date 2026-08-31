@@ -28,3 +28,12 @@ def get_prediction(payload: dict) -> dict | None:
             headers={"Content-Type": "application/json"},
             timeout=10
         )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {
+                "error" : f"API Error ({response.status_code}): {response.text}"
+            }
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Connection failed: {str(e)}"}
