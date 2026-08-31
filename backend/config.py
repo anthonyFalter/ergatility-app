@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 # Project root directory
-BASE_DIR = Path(__file__).parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Model artifacts paths
 ARTIFACTS_DIR = BASE_DIR / "artifacts"
