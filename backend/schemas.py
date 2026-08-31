@@ -33,3 +33,42 @@ class ChurnInputSchema(BaseModel):
         description='Average monthly hours worked (range: 90-310)',
         examples=[200],
     )
+    
+    time_spend_company: int = Field(
+        ...,
+        ge=2,
+        le=10,
+        description="Years spent at the company (range: 2–10)",
+        examples=[3],
+    )
+    work_accident: Literal[0, 1] = Field(
+        ...,
+        description="0 = No work accident, 1 = Work accident occurred",
+        examples=[0],
+    )
+    promotion_last_5years: Literal[0, 1] = Field(
+        ...,
+        description="0 = Not promoted in last 5 years, 1 = Promoted",
+        examples=[0],
+    )
+    salary: Literal["low", "medium", "high"] = Field(
+        ...,
+        description="Salary level tier ('low', 'medium', 'high')",
+        examples=["medium"],
+    )
+    department: Literal[
+        "sales",
+        "accounting",
+        "hr",
+        "technical",
+        "support",
+        "management",
+        "IT",
+        "product_mng",
+        "marketing",
+        "RandD",
+    ] = Field(
+        ...,
+        description="Department name",
+        examples=["sales"],
+    )
