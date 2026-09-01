@@ -195,18 +195,8 @@ pip install pytest-cov
 pytest --cov=backend --cov=frontend
 ```
 
-## Configuration & Environment Variables
-
-Key settings can be configured via environment variables or modified in `backend/config.py` and `frontend/utils.py`:
-
-- **`BACKEND_URL`**: Base URL used by the Streamlit frontend to communicate with the FastAPI server (Default: `http://localhost:8000`).
-- **`MODEL_PATH`**: File system location of the trained model binary (Default: `artifacts/rf_cv_model.pickle`).
-
-## Troubleshooting
-
 ### API Service Offline in Streamlit
 - Ensure the FastAPI server is running on `http://localhost:8000` before submitting prediction forms in Streamlit.
-- Check that `BACKEND_URL` is configured correctly if deployed across external servers (e.g., Railway or Render).
 
 ### ModuleNotFoundError: No module named 'frontend' or 'backend'
 - Run Python commands with module execution context: `python -m uvicorn backend.main:app --reload`.
