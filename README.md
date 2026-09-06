@@ -7,10 +7,9 @@ Ergatility is a unified simulation platform and RESTful API built to model, simu
 
 
 **Features:**
-- Turnover Simulation Engine: Runs predictive models to simulate workforce attrition across various organizational scenarios and parameters.
+- Turnover Simulation Engine: modify different parameters to manipulate the outcome of an employee turnover risk.
 
-- RESTful API Service: Exposes clean, high-performance endpoints built with FastAPI to programmatically execute simulations, query prediction models, and check engine health.
-
+- RESTful API Service: An easy to use REST API endpoints to help developers implement the engine to their platforms.
 *Note: The API is hosted using Render, an operational delay of up to 1 minute is to be expected so please wait while your payload gets processed.*
 
 ## Project Structure
