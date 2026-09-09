@@ -170,26 +170,6 @@ response = requests.post("http://localhost:8000/predict", json=payload)
 print(response.json())
 ```
 
-## Testing
-
-Run the automated test suite using `pytest`:
-
-```bash
-# Run all tests
-pytest
-
-# Run specific test suites
-pytest tests/test_api.py
-pytest tests/test_model_handler.py
-
-# Run with verbose output
-pytest -v
-
-# Run with coverage report
-pip install pytest-cov
-pytest --cov=backend --cov=frontend
-```
-
 ### API Service Offline in Streamlit
 - Ensure the FastAPI server is running on `http://localhost:8000` before submitting prediction forms in Streamlit.
 
